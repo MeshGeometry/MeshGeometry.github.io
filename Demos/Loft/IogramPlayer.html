@@ -24,7 +24,9 @@
     }
     
     div.emscripten_border {
-        border: 10px;
+        border: 0px none;
+        width: 100%;
+        height: 100%;
     }
     /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
     
@@ -137,10 +139,11 @@
 <body>
     <div class="spinner" id='spinner'></div>
     <div class="emscripten" id="status">Downloading...</div>
+
     <div class="emscripten">
         <progress value="0" max="100" id="progress" hidden=1></progress>
     </div>
-    <div class="emscripten_border">
+    <div class="emscripten_border" id="container">
         <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     </div>
     <textarea id="output" rows="8"></textarea>
@@ -148,6 +151,7 @@
     var statusElement = document.getElementById('status');
     var progressElement = document.getElementById('progress');
     var spinnerElement = document.getElementById('spinner');
+    var containerElement = document.getElementById('container');
     var Module = {
         preRun: [],
         postRun: [],
@@ -206,9 +210,15 @@
                 progressElement.value = null;
                 progressElement.max = null;
                 progressElement.hidden = true;
+                statusElement.hidden = true;
                 if (!text) spinnerElement.style.display = 'none';
+                if (!text) statusElement.style.display = 'none';
             }
             statusElement.innerHTML = text;
+        },
+        setCanvasSize: function(width, height){
+            Module.canvas.width = width;
+            Module.canvas.height = height;
         },
         totalDependencies: 0,
         monitorRunDependencies: function(left) {
@@ -217,6 +227,7 @@
         }
     };
     Module.setStatus('Downloading...');
+    Module.setCanvasSize(window.innerWidth, window.innerHeight);
     window.onerror = function(event) {
         // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
         Module.setStatus('Exception thrown, see JavaScript console');
